@@ -334,7 +334,10 @@ public:
         vector<int> solution;
         solution.push_back(0); // We start from 0
         solution.push_back(numbers[0]);
-        int division = N/V;
+        float nTest = N;
+        float vTest = V;
+        int division = ceil(nTest/vTest);
+        cout<<division<<'\n';
         for (int i = 1; i<N; i++){
             if ((i % division)==0){
                 solution.push_back(0); //Each path ends to 0
