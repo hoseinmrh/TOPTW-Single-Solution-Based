@@ -1,3 +1,0 @@
-C:/HOSEIN/jozve and tamrin/8th Semester/ADA/HW 1/cmake-build-debug/CMakeFiles/HW_1.dir
-C:/HOSEIN/jozve and tamrin/8th Semester/ADA/HW 1/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/HOSEIN/jozve and tamrin/8th Semester/ADA/HW 1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
