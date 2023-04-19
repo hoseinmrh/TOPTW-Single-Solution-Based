@@ -5,7 +5,7 @@ using namespace std::chrono;
 
 int main() {
 // Testing
-    File file("c204");
+    File file("c102");
     file.read_file();
     float totalProfit = 0;
     totalProfit = calculate_profit();
@@ -21,7 +21,9 @@ int main() {
     cout << "**************************************************" << '\n';
     auto start = high_resolution_clock::now();
     SA sa(firstSolution, 0.3, 0.999, 30, 4000, file.get_N(), file.get_V());
-    float finalProfit = sa.saAlgorithm();
+//    sa.ssaAlgorithm(); // By number of Not improving times
+    sa.fsaAlgorithm(5); // By time
+    float finalProfit = sa.printFinalSolution();
     auto stop = high_resolution_clock::now();
 
     auto duration = duration_cast<seconds>(stop - start);
@@ -33,6 +35,7 @@ int main() {
 
 //    cout<<"Iteration "<<iter+1<<" finished"<<'\n';
     cout<<'\n';
+//    sa.testFunction();
 //    }
     return 0;
 }

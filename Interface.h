@@ -534,7 +534,7 @@ public:
         return false;
     }
 
-    float saAlgorithm(){
+    void ssaAlgorithm(){
         // Initial Part!
         srand(time(0));
         vector<int> currentSolution = solution;
@@ -587,6 +587,10 @@ public:
                 localNoImprove++;
             }
         }
+
+    }
+
+    float printFinalSolution(){
         cout<<"***************** Final Solution *****************"<<'\n';
         for(int k = 0; k<solution.size(); k++){
             cout<<solution[k]<<' ';
@@ -595,21 +599,65 @@ public:
 
         float finalProfit = calculate(solution, 1);
         return finalProfit;
-
     }
 
-    void testFunction(){
+    void fsaAlgorithm(int seconds){
+        // Initial Part!
+        srand(time(0));
+        vector<int> currentSolution = solution;
+        float t = t0;
+        fBest = calculate(solution , 1);
+//        int localNoImprove = 0;
+        // Initial Part!
+        vector<int> newSolution; // Y
         auto Start = std::chrono::high_resolution_clock::now();
-        while (1)
-        {
-            cout<<"Nigga nigaa"<<'\n';
+        while(1){
+            int iteration = 0;
             auto End = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> Elapsed = End - Start;
-            if (Elapsed.count() >= 5000.0)
+            if (Elapsed.count() >= seconds * 1000)
                 break;
-        }
-    }
+            while(iteration < maxIterations){
 
+                iteration++; // Inc iteration
+                float currentProfit = calculate(currentSolution , 0); // OBJ(X)
+                int p = random_0_1();
+                if(p > 50){
+                    newSolution = insertionRandom(currentSolution);
+                }
+                else{
+                    newSolution = swapRandom(currentSolution);
+                }
+
+                float newProfit = calculate(newSolution , 0);
+                float delta = newProfit - currentProfit;
+                if(delta > 0){
+                }
+                else{
+                    double  x = delta / t;
+                    double prob = exp(x) * 100;
+                    float r = random_0_1();
+                    if (prob < r){
+                        continue;
+                    }
+                }
+                currentSolution.clear();
+                currentSolution = newSolution;
+
+                if(newProfit > fBest){
+                    solution = currentSolution;
+                    fBest = newProfit;
+                }
+                newSolution.clear();
+
+            }
+            t = t * alpha;
+            // Local search
+            bool isSwapImprove = localSearchSwap();
+            bool isInsertionImprove = localSearchInsertion();
+        }
+
+    }
 
     const vector<int> &getSolution() const {
         return solution;
