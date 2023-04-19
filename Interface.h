@@ -663,6 +663,109 @@ public:
 
 };
 
+class GRASP{
+protected:
+    int N;
+    int V;
+    int RCL_LEN;
+    int maxIteration;
+    int B;
+    vector<int> FirstSolution;
+    vector<int> BestSolution;
+    int fBest;
+public:
+    GRASP(int nothing){
+        RCL_LEN = nothing;
+    }
+    GRASP(int n_, int v_, int rcl_len, int b, vector<int> FS){
+        N = n_;
+        V = v_;
+        RCL_LEN = rcl_len;
+        B = b;
+        maxIteration = (n_ + v_ - 1) * b ;
+        fBest = 0;
+        FirstSolution = FS;
+    }
+
+    struct sortByProfitStructure
+    {
+        inline bool operator() (const Vertex& v1, const Vertex& v2)
+        {
+            return (v1.getProfit() > v2.getProfit());
+        }
+    };
+
+    struct sortByTravelTimeStructure{
+        inline bool operator() (const Vertex& v1, const Vertex& v2){
+            TOP top(0);
+            Vertex initial = vertexVector[0];
+            float v1TravelTime = top.distance_time(initial, v1);
+            float v2TravelTime = top.distance_time(initial, v2);
+            return (v1TravelTime < v2TravelTime);
+        }
+    };
+
+    vector<int> sortByProfit(){
+        vector<Vertex> tmpV = vertexVector;
+        sort(tmpV.begin(), tmpV.end(), sortByProfitStructure());
+        vector<int> sortedByProfit;
+        for(int i = 0; i < tmpV.size() - 1; i++){
+            sortedByProfit.push_back(tmpV[i].getI());
+        }
+        return sortedByProfit;
+    }
+
+    vector<int> sortByTravelTime(){
+        vector<Vertex> tmpV = vertexVector;
+        sort(tmpV.begin(), tmpV.end(), sortByTravelTimeStructure());
+        TOP top(0);
+        vector<int> sortedByTT;
+        for(int i = 1; i< tmpV.size(); i++){
+            sortedByTT.push_back(tmpV[i].getI());
+        }
+
+        return sortedByTT;
+    }
+
+    void randomZeroRCL(){
+        int randomNumber = rand() % RCL_LEN;
+        cout<<randomNumber<<'\n';
+    }
+
+    void randomZero100(){
+        int randomNumber = rand() % 100;
+        cout<<randomNumber<<'\n';
+    }
+
+    vector<int> addToRCL( vector<int> sortedV){
+        vector<int> RCL;
+        int index = 0;
+        for(int & vertexId : sortedV){
+            if(index < RCL_LEN){
+                RCL.push_back(vertexId);
+                index++;
+            }
+            else{
+                break;
+            }
+        }
+        return RCL;
+    }
+
+    void testRCL(){
+        vector<int> sortedV = sortByTravelTime();
+        vector<int> RCL;
+        RCL = addToRCL(sortedV);
+        for(int &vertex : RCL)
+            cout<<vertex<<'\n';
+    }
+
+
+
+
+
+};
+
 void add_to_vertex_vector(Vertex v){
     vertexVector.push_back(v);
 }
