@@ -1,5 +1,4 @@
-# TOP_SA
-Simulated Annealing heuristic for TOPTW. 
+# TOP_1HW
 
 command to run:
 
