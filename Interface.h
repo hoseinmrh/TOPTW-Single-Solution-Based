@@ -337,7 +337,6 @@ public:
         float nTest = N;
         float vTest = V;
         int division = ceil(nTest/vTest);
-        cout<<division<<'\n';
         for (int i = 1; i<N; i++){
             if ((i % division)==0){
                 solution.push_back(0); //Each path ends to 0
@@ -599,10 +598,25 @@ public:
 
     }
 
+    void testFunction(){
+        auto Start = std::chrono::high_resolution_clock::now();
+        while (1)
+        {
+            cout<<"Nigga nigaa"<<'\n';
+            auto End = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> Elapsed = End - Start;
+            if (Elapsed.count() >= 5000.0)
+                break;
+        }
+    }
+
+
     const vector<int> &getSolution() const {
         return solution;
     }
 };
+
+
 
 void add_to_vertex_vector(Vertex v){
     vertexVector.push_back(v);
