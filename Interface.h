@@ -220,18 +220,6 @@ public:
         profit = 0;
     }
 
-    int getN() const {
-        return N;
-    }
-
-    int getV() const {
-        return V;
-    }
-
-    float getTime() const {
-        return time;
-    }
-
     float getProfit() const {
         return profit;
     }
@@ -349,6 +337,25 @@ public:
         return solution;
 
     }
+
+    vector<int> grasp_solution_generator() {
+        vector<int> solution;
+        solution.push_back(0); // We start from 0
+        solution.push_back(-2);
+        float nTest = N;
+        float vTest = V;
+        int division = ceil(nTest/vTest);
+        for (int i = 1; i<N; i++){
+            if ((i % division)==0){
+                solution.push_back(0); //Each path ends to 0
+                solution.push_back(-1); // To separate path
+                solution.push_back(0); // next path start
+            }
+            solution.push_back(-2);
+        }
+        solution.push_back(0); //Last part
+        return solution;
+    }
 };
 
 class SA{
@@ -357,7 +364,6 @@ protected:
     float t0;
     float alpha;
     float noImprove;
-    float maxT;
     int B;
     int N;
     int V;
@@ -365,10 +371,6 @@ protected:
     int fBest;
 
 public:
-    SA(vector<int> solution_ ){
-        solution = solution_;
-    }
-
     SA(vector<int> solution_ , float t0_ , float  alpha_ , float noImprove_, int B_, int N_, int V_){
         solution = solution_;
         alpha = alpha_;
@@ -659,12 +661,7 @@ public:
 
     }
 
-    const vector<int> &getSolution() const {
-        return solution;
-    }
 };
-
-
 
 void add_to_vertex_vector(Vertex v){
     vertexVector.push_back(v);
