@@ -254,7 +254,7 @@ public:
 //            cout<<time<<" <--Time"<<'\n';
 //            cout<<profit<<"<--Profit"<<'\n';
 
-            if(solution[index] == -1){
+            if(solution[index] < 0){
                 setTime(0); // New path
                 continue;
             }
@@ -341,17 +341,19 @@ public:
     vector<int> grasp_solution_generator() {
         vector<int> solution;
         solution.push_back(0); // We start from 0
-        solution.push_back(-2);
+        solution.push_back(0);
         float nTest = N;
         float vTest = V;
         int division = ceil(nTest/vTest);
+        int pathN = -1;
         for (int i = 1; i<N; i++){
             if ((i % division)==0){
                 solution.push_back(0); //Each path ends to 0
-                solution.push_back(-1); // To separate path
+                solution.push_back(pathN); // To separate path
                 solution.push_back(0); // next path start
+                pathN --;
             }
-            solution.push_back(-2);
+            solution.push_back(0);
         }
         solution.push_back(0); //Last part
         return solution;
@@ -371,6 +373,7 @@ protected:
     int fBest;
 
 public:
+
     SA(vector<int> solution_ , float t0_ , float  alpha_ , float noImprove_, int B_, int N_, int V_){
         solution = solution_;
         alpha = alpha_;
@@ -671,12 +674,10 @@ protected:
     int maxIteration;
     int B;
     vector<int> FirstSolution;
+    vector<int> mainSolution;
     vector<int> BestSolution;
     int fBest;
 public:
-    GRASP(int nothing){
-        RCL_LEN = nothing;
-    }
     GRASP(int n_, int v_, int rcl_len, int b, vector<int> FS){
         N = n_;
         V = v_;
@@ -727,14 +728,14 @@ public:
         return sortedByTT;
     }
 
-    void randomZeroRCL(){
-        int randomNumber = rand() % RCL_LEN;
-        cout<<randomNumber<<'\n';
+   int randomZeroRCL(int size){
+        int randomNumber = rand() % size;
+       return randomNumber;
     }
 
-    void randomZero100(){
+    int randomZero100(){
         int randomNumber = rand() % 100;
-        cout<<randomNumber<<'\n';
+        return randomNumber;
     }
 
     vector<int> addToRCL( vector<int> sortedV){
@@ -752,17 +753,197 @@ public:
         return RCL;
     }
 
-    void testRCL(){
-        vector<int> sortedV = sortByTravelTime();
-        vector<int> RCL;
-        RCL = addToRCL(sortedV);
-        for(int &vertex : RCL)
-            cout<<vertex<<'\n';
+    float calculate(vector<int> someSolution , int check){
+        TOP top(0);
+        top.calculate_solution(someSolution, check);
+        return top.getProfit();
     }
 
+    void constructSolution(){
+        vector<int> greedyVector;
+        mainSolution = FirstSolution;
+        int chooseGreedy = randomZero100();
+        if (chooseGreedy > 50){
+            greedyVector = sortByTravelTime();
+        } else{
+            greedyVector = sortByProfit();
+        }
+        for(int i = 0; i < N; i++){ //Construct Path
+            vector<int> RCL = addToRCL(greedyVector);
+            int index = randomZeroRCL(RCL.size());
+            int selectedCandidate = RCL[index];
+            mainSolution = choosingBestPath(mainSolution, selectedCandidate);
+            RCL.erase(RCL.begin() + index); //Delete from RCL
+            greedyVector.erase(greedyVector.begin() + index); //Delete From vector
+        }
+//        printVector("Constructed Solution", mainSolution);
+//        calculate(mainSolution, 1);
+    }
 
+    void printVector(string name, vector<int> v){
+        cout<<name<<'\n';
+        for(int & element: v){
+            cout<<element<<" ";
+        }
+        cout<<'\n';
+    }
 
+    vector<int> choosingBestPath(vector<int> baseSolution, int SC){
+        float bestProfit = calculate(baseSolution,0);
+        int bestI = 0;
+        int ableToadI = 0;
+        int flag = 0;
+        for(int i = 0 ; i< V; i++){
+            vector<int> tmp = baseSolution;
+            int startIndex = 1 + ((i) * 3) + (i * ceill(N/V));
+            int lastIndex = startIndex + ceill(N/V);
+            for (int j = startIndex ; j < lastIndex ; j++){
+                if(tmp[j] == 0){
+                    tmp[j] = SC;
+                    ableToadI = i;
+                    break;
+                }
+                continue;
+            }
+            float currentProfit = 0;
+            currentProfit = calculate(tmp, 0);
+            if(currentProfit >  bestProfit){
+                bestProfit = currentProfit;
+                bestI = i;
+                flag = 1;
+            }
+            else{
+                if(flag == 0)
+                    bestI = ableToadI;
+            }
+        }
 
+        // Now add to the best position
+        int startIndexFinal = 1 + ((bestI) * 3) + (bestI * ceill(N/V));
+        int lastIndexFinal = startIndexFinal + ceill(N/V);
+        for (int j = startIndexFinal ; j < lastIndexFinal; j++){
+            if(baseSolution[j] == 0){
+                baseSolution[j] = SC;
+                break;
+            }
+        }
+        return baseSolution;
+    }
+
+    vector<int> swapVector(vector<int> vector, int index1, int index2){
+        int tmp = vector[index1];
+        vector[index1] = vector[index2];
+        vector[index2] = tmp;
+        return vector;
+    }
+
+    vector<int> insertionVector(vector<int> vector1, int index1 , int index2){
+        vector<int> newVector = vector1;
+        newVector.erase(newVector.begin() + index1);
+        if(index2 > index1){
+            auto position = newVector.begin() + index2 - 1;
+            newVector.insert(position , vector1[index1]);
+        }
+        else{
+            auto position = newVector.begin() + index2;
+            newVector.insert(position , vector1[index1]);
+        }
+        return newVector;
+    }
+
+    bool localSearchSwap(){
+        vector<int> tempSolution = mainSolution;
+        int solutionLength = tempSolution.size();
+        float bestProfit = calculate(mainSolution , 0);
+        int bestI;
+        int bestJ;
+        int flag = 0;
+        for(int i = 0; i < solutionLength; i++){
+            if(tempSolution[i] < 1){ //We don't want to swap these
+                continue;
+            }
+            for(int j = i; j < solutionLength; j++){
+                if(tempSolution[j] < 1){
+                    continue;
+                }
+                tempSolution = swapVector(tempSolution, i, j);
+                float localProfit = calculate(tempSolution , 0);
+                if(localProfit > bestProfit){
+                    flag = 1;
+                    bestProfit = localProfit;
+                    bestI = i;
+                    bestJ = j;
+                }
+                tempSolution.clear();
+                tempSolution = mainSolution;
+            }
+        }
+
+        if (flag == 1) {
+            mainSolution = swapVector(mainSolution, bestI, bestJ);
+
+            return true;
+        }
+
+        return false;
+
+    }
+
+    bool localSearchInsertion(){
+        vector<int> tempSolution = mainSolution;
+        int solutionLength = tempSolution.size();
+        float bestProfit = calculate(mainSolution , 0);
+        int bestI;
+        int bestJ;
+        int flag = 0;
+        for(int i = 0; i < solutionLength; i++){
+            if(tempSolution[i] < 1){ //We don't want to mess with these
+                continue;
+            }
+            for(int j = i; j < solutionLength; j++){
+                if(tempSolution[j] < 1){
+                    continue;
+                }
+                tempSolution = insertionVector(tempSolution, i, j);
+                float localProfit = calculate(tempSolution , 0);
+                if(localProfit > bestProfit){
+                    flag = 1;
+                    bestProfit = localProfit;
+                    bestI = i;
+                    bestJ = j;
+                }
+                tempSolution.clear();
+                tempSolution = mainSolution;
+            }
+        }
+
+        if (flag == 1) {
+            mainSolution = insertionVector(mainSolution, bestI, bestJ);
+            return true;
+        }
+
+        return false;
+    }
+
+    void graspAlgorithm(){
+        srand(time(0));
+        BestSolution = FirstSolution;
+        float bestProfit = calculate(BestSolution, 0);
+        for(int j = 0; j< 100; j++){
+            constructSolution();
+            for(int i = 0; i < 30; i++){
+                localSearchSwap();
+                localSearchInsertion();
+            }
+            float currentProfit = calculate(mainSolution, 0);
+            if(currentProfit > bestProfit){
+                BestSolution = mainSolution;
+                bestProfit = currentProfit;
+            }
+        }
+        printVector("Final Solution" , BestSolution);
+        calculate(BestSolution, 1);
+    }
 
 };
 
