@@ -4,12 +4,12 @@ using namespace std;
 using namespace std::chrono;
 
 int main(){
-    File file("rc201");
+    File file("rc208");
     file.read_file();
     float totalProfit = 0;
     totalProfit = calculate_profit();
     cout << "Total profit is --> " << totalProfit << '\n';
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 5; i++){
         TOP top(file.get_N(), file.get_V());
         auto start = high_resolution_clock::now();
         vector<int> firstSolution = top.grasp_solution_generator();
