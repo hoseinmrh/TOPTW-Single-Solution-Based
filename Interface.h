@@ -672,20 +672,20 @@ protected:
     int V;
     int RCL_LEN;
     int maxIteration;
-    int B;
     vector<int> FirstSolution;
     vector<int> mainSolution;
     vector<int> BestSolution;
+    int maxLocalI;
     int fBest;
 public:
-    GRASP(int n_, int v_, int rcl_len, int b, vector<int> FS){
+    GRASP(int n_, int v_, int rcl_len, int maxI, int maxLI, vector<int> FS){
         N = n_;
         V = v_;
         RCL_LEN = rcl_len;
-        B = b;
-        maxIteration = (n_ + v_ - 1) * b ;
+        maxIteration =  maxI;
         fBest = 0;
         FirstSolution = FS;
+        maxLocalI = maxLI;
     }
 
     struct sortByProfitStructure
@@ -929,9 +929,9 @@ public:
         srand(time(0));
         BestSolution = FirstSolution;
         float bestProfit = calculate(BestSolution, 0);
-        for(int j = 0; j< 100; j++){
+        for(int j = 0; j< maxIteration; j++){
             constructSolution();
-            for(int i = 0; i < 30; i++){
+            for(int i = 0; i < maxLocalI; i++){
                 localSearchSwap();
                 localSearchInsertion();
             }
