@@ -955,8 +955,10 @@ private:
     int I;
     int J;
     float changeProfit;
+    float actualProfit;
 public:
-    TabuItem(int i, int j, float changeProfit) : I(i), J(j), changeProfit(changeProfit) {}
+    TabuItem(int i, int j, float changeProfit, float actualProfit) : I(i), J(j), changeProfit(changeProfit),
+                                                                     actualProfit(actualProfit) {}
 
     int getI() const {
         return I;
@@ -968,6 +970,10 @@ public:
 
     float getChangeProfit() const {
         return changeProfit;
+    }
+
+    float getActualProfit() const {
+        return actualProfit;
     }
 
 };
@@ -988,6 +994,14 @@ public:
         FirstSolution = fs;
         maxIteration = maxI;
         fBest = 0;
+    }
+
+    float calculate_profit(){
+        int profitSum = 0;
+        for(int i = 0 ; i< vertexVector.size(); i++){
+            profitSum = profitSum + vertexVector[i].getProfit();
+        }
+        return profitSum;
     }
 
     bool checkTabuList(TabuItem tabu){
@@ -1037,11 +1051,12 @@ public:
         return newVector;
     }
 
-    void localSearchSwap(){
+    int localSearchSwap(){
         vector<int> tempSolution = MainSolution;
         int solutionLength = tempSolution.size();
         float currentProfit = calculate(MainSolution , 0);
         neighborhood.clear(); // Clear all data from neighborhood;
+        float totalProfit = calculate_profit();
 
         for(int i = 0; i < solutionLength; i++){
             if(tempSolution[i] < 1){ //We don't want to swap these
@@ -1054,7 +1069,7 @@ public:
                 tempSolution = swapVector(tempSolution, i, j);
                 float localProfit = calculate(tempSolution , 0);
                 float profitChange = localProfit - currentProfit;
-                createMoves(i,j,profitChange); // Add this move to the list
+                createMoves(i,j,profitChange, localProfit); // Add this move to the list
                 tempSolution.clear();
                 tempSolution = MainSolution;
             }
@@ -1069,9 +1084,17 @@ public:
                 int I = neighborhood[index].getI();
                 int J = neighborhood[index].getJ();
                 MainSolution = swapVector(MainSolution,I,J); // We change solution to them!
+                return 0;
                 break;
             }
             else{
+                if(neighborhood[index].getActualProfit() > 0.97 * totalProfit ){
+                    addToTabuList(neighborhood[index]);
+                    int I = neighborhood[index].getI();
+                    int J = neighborhood[index].getJ();
+                    MainSolution = swapVector(MainSolution,I,J); // We change solution to them!
+                    return 1;
+                }
                 continue; //Item is in tabu list
             }
         }
@@ -1113,8 +1136,8 @@ public:
         return false;
     }
 
-    void createMoves(int i, int j, float profitChange){
-        TabuItem tabuItem(i,j,profitChange);
+    void createMoves(int i, int j, float profitChange, float actualProfit){
+        TabuItem tabuItem(i,j,profitChange, actualProfit);
         neighborhood.push_back(tabuItem);
     }
 
@@ -1137,9 +1160,17 @@ public:
         float firstProfit = calculate(FirstSolution,1);
         printVector("First Solution", FirstSolution);
         MainSolution = FirstSolution;
-        for(int i = 0; i < 3000; i++){
-            localSearchSwap(); //Main tabu search operator
-            localSearchInsertion();
+        for(int i = 0; i < 5000; i++){
+            int response = localSearchSwap(); //Main tabu search operator
+            if(response == 1){
+                //We have something greater than 97 percent
+                break;
+            }
+        }
+
+        bool upgradeResult = localSearchInsertion();
+        while(upgradeResult){
+            upgradeResult = localSearchInsertion();
         }
         printVector("Final Solution", MainSolution);
         calculate(MainSolution, 1);
