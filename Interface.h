@@ -24,7 +24,10 @@ class File;
 class Vertex;
 class TOP;
 class SA;
+class GRASP;
+class TabuItem;
 static vector<Vertex> vertexVector;
+
 void add_to_vertex_vector(Vertex v);
 
 class Vertex{
@@ -944,6 +947,206 @@ public:
         printVector("Final Solution" , BestSolution);
         calculate(BestSolution, 1);
     }
+
+};
+
+class TabuItem{
+private:
+    int I;
+    int J;
+    float changeProfit;
+public:
+    TabuItem(int i, int j, float changeProfit) : I(i), J(j), changeProfit(changeProfit) {}
+
+    int getI() const {
+        return I;
+    }
+
+    int getJ() const {
+        return J;
+    }
+
+    float getChangeProfit() const {
+        return changeProfit;
+    }
+
+};
+
+class TabuSearch {
+protected:
+    int Tabu_Len;
+    vector<int> FirstSolution;
+    vector<int> MainSolution;
+    vector<int> FinalSolution;
+    int maxIteration;
+    int fBest;
+    vector<TabuItem> tabuList;
+    vector<TabuItem> neighborhood;
+public:
+    TabuSearch (int tabu_len, vector<int> fs, int maxI){
+        Tabu_Len = tabu_len;
+        FirstSolution = fs;
+        maxIteration = maxI;
+        fBest = 0;
+    }
+
+    bool checkTabuList(TabuItem tabu){
+        for(int i = 0; i< tabuList.size(); i++){
+            if(tabuList[i].getI() == tabu.getI() && tabuList[i].getJ() == tabu.getJ()){
+                return false; // Item is in tabu list
+            }
+            else if(tabuList[i].getI() == tabu.getJ() && tabuList[i].getJ() == tabu.getI()){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    float calculate(vector<int> someSolution , int check){
+        TOP top(0);
+        top.calculate_solution(someSolution, check);
+        return top.getProfit();
+    }
+
+    struct sortByChangeStructure
+    {
+        inline bool operator() (const TabuItem& tb1, const TabuItem& tb2)
+        {
+            return (tb1.getChangeProfit() > tb2.getChangeProfit());
+        }
+    };
+
+    vector<int> swapVector(vector<int> vector, int index1, int index2){
+        int tmp = vector[index1];
+        vector[index1] = vector[index2];
+        vector[index2] = tmp;
+        return vector;
+    }
+
+    vector<int> insertionVector(vector<int> vector1, int index1 , int index2){
+        vector<int> newVector = vector1;
+        newVector.erase(newVector.begin() + index1);
+        if(index2 > index1){
+            auto position = newVector.begin() + index2 - 1;
+            newVector.insert(position , vector1[index1]);
+        }
+        else{
+            auto position = newVector.begin() + index2;
+            newVector.insert(position , vector1[index1]);
+        }
+        return newVector;
+    }
+
+    void localSearchSwap(){
+        vector<int> tempSolution = MainSolution;
+        int solutionLength = tempSolution.size();
+        float currentProfit = calculate(MainSolution , 0);
+        neighborhood.clear(); // Clear all data from neighborhood;
+
+        for(int i = 0; i < solutionLength; i++){
+            if(tempSolution[i] < 1){ //We don't want to swap these
+                continue;
+            }
+            for(int j = i; j < solutionLength; j++){
+                if(tempSolution[j] < 1){
+                    continue;
+                }
+                tempSolution = swapVector(tempSolution, i, j);
+                float localProfit = calculate(tempSolution , 0);
+                float profitChange = localProfit - currentProfit;
+                createMoves(i,j,profitChange); // Add this move to the list
+                tempSolution.clear();
+                tempSolution = MainSolution;
+            }
+        }
+
+        sort(neighborhood.begin(),neighborhood.end(),sortByChangeStructure()); //Sort them by profit
+        for(int index = 0; index < neighborhood.size(); index++){
+            if(checkTabuList(neighborhood[index])) { //Item is not in tabu list
+                // We can use that
+                // Add it to tabu list first
+                addToTabuList(neighborhood[index]);
+                int I = neighborhood[index].getI();
+                int J = neighborhood[index].getJ();
+                MainSolution = swapVector(MainSolution,I,J); // We change solution to them!
+                break;
+            }
+            else{
+                continue; //Item is in tabu list
+            }
+        }
+    }
+
+    bool localSearchInsertion(){
+        vector<int> tempSolution = MainSolution;
+        int solutionLength = tempSolution.size();
+        float bestProfit = calculate(MainSolution , 0);
+        int bestI;
+        int bestJ;
+        int flag = 0;
+        for(int i = 0; i < solutionLength; i++){
+            if(tempSolution[i] < 1){ //We don't want to mess with these
+                continue;
+            }
+            for(int j = i; j < solutionLength; j++){
+                if(tempSolution[j] < 1){
+                    continue;
+                }
+                tempSolution = insertionVector(tempSolution, i, j);
+                float localProfit = calculate(tempSolution , 0);
+                if(localProfit > bestProfit){
+                    flag = 1;
+                    bestProfit = localProfit;
+                    bestI = i;
+                    bestJ = j;
+                }
+                tempSolution.clear();
+                tempSolution = MainSolution;
+            }
+        }
+
+        if (flag == 1) {
+            MainSolution = insertionVector(MainSolution, bestI, bestJ);
+            return true;
+        }
+
+        return false;
+    }
+
+    void createMoves(int i, int j, float profitChange){
+        TabuItem tabuItem(i,j,profitChange);
+        neighborhood.push_back(tabuItem);
+    }
+
+    void addToTabuList(TabuItem tabu){
+        if(tabuList.size() == Tabu_Len){
+            tabuList.erase(tabuList.begin()); //We remove first element
+        }
+        tabuList.push_back(tabu);
+    }
+
+    void printVector(string name, vector<int> v){
+        cout<<name<<'\n';
+        for(int & element: v){
+            cout<<element<<" ";
+        }
+        cout<<'\n';
+    }
+
+    void tabuSearchAlgorithm(){
+        float firstProfit = calculate(FirstSolution,1);
+        printVector("First Solution", FirstSolution);
+        MainSolution = FirstSolution;
+        for(int i = 0; i < 3000; i++){
+            localSearchSwap(); //Main tabu search operator
+            localSearchInsertion();
+        }
+        printVector("Final Solution", MainSolution);
+        calculate(MainSolution, 1);
+
+
+    }
+
 
 };
 

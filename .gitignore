@@ -2,3 +2,4 @@ Instances
 mainSA.exe
 mainGRASP.exe
 cmake-build-debug
+ReadFile.h

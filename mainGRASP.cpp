@@ -4,7 +4,7 @@ using namespace std;
 using namespace std::chrono;
 
 int main(){
-    File file("rc204");
+    File file("c204");
     file.read_file();
     float totalProfit = 0;
     totalProfit = calculate_profit();
