@@ -4,16 +4,16 @@ using namespace std;
 using namespace std::chrono;
 
 int main(){
-    File file("c207");
+    File file("pr04");
     file.read_file();
     float totalProfit = 0;
     totalProfit = calculate_profit();
     cout << "Total profit is --> " << totalProfit << '\n';
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 1; i++){
     TOP top(file.get_N(), file.get_V());
     auto start = high_resolution_clock::now();
     vector<int> firstSolution = top.random_solution_generator();
-    TabuSearch tabuSearch (10, firstSolution, 10);
+    TabuSearch tabuSearch (10, firstSolution, 5000);
     for(int i = 0; i < 1; i++){
         tabuSearch.tabuSearchAlgorithm();
     }

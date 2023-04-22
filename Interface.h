@@ -1160,7 +1160,7 @@ public:
         float firstProfit = calculate(FirstSolution,1);
         printVector("First Solution", FirstSolution);
         MainSolution = FirstSolution;
-        for(int i = 0; i < 5000; i++){
+        for(int i = 0; i < maxIteration; i++){
             int response = localSearchSwap(); //Main tabu search operator
             if(response == 1){
                 //We have something greater than 97 percent
@@ -1174,8 +1174,6 @@ public:
         }
         printVector("Final Solution", MainSolution);
         calculate(MainSolution, 1);
-
-
     }
 
 
