@@ -1088,7 +1088,7 @@ public:
                 break;
             }
             else{
-                if(neighborhood[index].getActualProfit() > 0.97 * totalProfit ){
+                if(neighborhood[index].getActualProfit() > 0.98 * totalProfit ){
                     addToTabuList(neighborhood[index]);
                     int I = neighborhood[index].getI();
                     int J = neighborhood[index].getJ();
