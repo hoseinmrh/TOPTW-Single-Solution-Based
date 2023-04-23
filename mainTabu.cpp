@@ -14,9 +14,7 @@ int main(){
     auto start = high_resolution_clock::now();
     vector<int> firstSolution = top.random_solution_generator();
     TabuSearch tabuSearch (10, firstSolution, 5000);
-    for(int i = 0; i < 1; i++){
-        tabuSearch.tabuSearchAlgorithm();
-    }
+    tabuSearch.tabuSearchAlgorithmTime(5);
 
     auto stop = high_resolution_clock::now();
 

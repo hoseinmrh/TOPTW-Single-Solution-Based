@@ -948,6 +948,31 @@ public:
         calculate(BestSolution, 1);
     }
 
+    void graspAlgorithmTime(int seconds){
+        srand(time(0));
+        BestSolution = FirstSolution;
+        float bestProfit = calculate(BestSolution, 0);
+        auto Start = std::chrono::high_resolution_clock::now();
+        while(1){
+            auto End = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> Elapsed = End - Start;
+            if (Elapsed.count() >= seconds * 1000)
+                break;
+            constructSolution();
+            for(int i = 0; i < maxLocalI; i++){
+                localSearchSwap();
+                localSearchInsertion();
+            }
+            float currentProfit = calculate(mainSolution, 0);
+            if(currentProfit > bestProfit){
+                BestSolution = mainSolution;
+                bestProfit = currentProfit;
+            }
+        }
+        printVector("Final Solution" , BestSolution);
+        calculate(BestSolution, 1);
+    }
+
 };
 
 class TabuItem{
@@ -1174,6 +1199,39 @@ public:
         }
         printVector("Final Solution", MainSolution);
         calculate(MainSolution, 1);
+    }
+
+    void tabuSearchAlgorithmTime(int seconds){
+        float firstProfit = calculate(FirstSolution,1);
+        printVector("First Solution", FirstSolution);
+        MainSolution = FirstSolution;
+        FirstSolution = FirstSolution;
+        fBest = firstProfit;
+        auto Start = std::chrono::high_resolution_clock::now();
+        while (1) {
+            auto End = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> Elapsed = End - Start;
+            if (Elapsed.count() >= seconds * 1000)
+                break;
+            int response = localSearchSwap(); //Main tabu search operator
+            if (response == 1) {
+                //We have something greater than 97 percent
+                break;
+            }
+            bool upgradeResult = localSearchInsertion();
+            while (upgradeResult) {
+                upgradeResult = localSearchInsertion();
+            }
+
+            float currentProfit = calculate(MainSolution,0);
+            if(currentProfit > fBest){
+                FinalSolution = MainSolution;
+                fBest = currentProfit;
+            }
+
+        }
+        printVector("Final Solution", FinalSolution);
+        calculate(FinalSolution, 1);
     }
 
 

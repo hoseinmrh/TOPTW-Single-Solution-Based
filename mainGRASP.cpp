@@ -4,7 +4,7 @@ using namespace std;
 using namespace std::chrono;
 
 int main(){
-    File file("rc207");
+    File file("c204");
     file.read_file();
     float totalProfit = 0;
     totalProfit = calculate_profit();
@@ -15,7 +15,8 @@ int main(){
         vector<int> firstSolution = top.grasp_solution_generator();
         int rcl_len = file.get_N() / file.get_V();
         GRASP grasp(file.get_N(), file.get_V(), rcl_len, 100,30, firstSolution);
-        grasp.graspAlgorithm();
+//        grasp.graspAlgorithm();
+        grasp.graspAlgorithmTime(5);
         auto stop = high_resolution_clock::now();
 
         auto duration = duration_cast<seconds>(stop - start);
