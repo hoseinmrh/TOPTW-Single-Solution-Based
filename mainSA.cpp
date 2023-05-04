@@ -5,11 +5,12 @@ using namespace std::chrono;
 
 int main() {
 // Testing
-    File file("c204");
+    File file("3-pr13");
     file.read_file();
     float totalProfit = 0;
     totalProfit = calculate_profit();
-//    for(int iter = 0; iter< 8; iter++) {
+
+    for(int iter = 0; iter< 2; iter++) {
     cout << "Total profit is --> " << totalProfit << '\n';
     TOP top(file.get_N(), file.get_V());
     vector<int> firstSolution = top.random_solution_generator();
@@ -21,8 +22,8 @@ int main() {
     cout << "**************************************************" << '\n';
     auto start = high_resolution_clock::now();
     SA sa(firstSolution, 0.3, 0.999, 30, 4000, file.get_N(), file.get_V());
-    sa.ssaAlgorithm(); // By number of Not improving times
-//    sa.fsaAlgorithm(5); // By time
+//    sa.ssaAlgorithm(); // By number of Not improving times
+    sa.fsaAlgorithm(180); // By time
     float finalProfit = sa.printFinalSolution();
     auto stop = high_resolution_clock::now();
 
@@ -33,9 +34,8 @@ int main() {
 
     cout << "Accuracy is --> " << (finalProfit / totalProfit) << '\n';
 
-//    cout<<"Iteration "<<iter+1<<" finished"<<'\n';
+  cout<<"Iteration "<<iter+1<<" finished"<<'\n';
     cout<<'\n';
-//    sa.testFunction();
-//    }
+    }
     return 0;
 }

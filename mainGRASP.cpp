@@ -4,19 +4,19 @@ using namespace std;
 using namespace std::chrono;
 
 int main(){
-    File file("c204");
+    File file("3-pr13");
     file.read_file();
     float totalProfit = 0;
     totalProfit = calculate_profit();
     cout << "Total profit is --> " << totalProfit << '\n';
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 2; i++){
         TOP top(file.get_N(), file.get_V());
         auto start = high_resolution_clock::now();
         vector<int> firstSolution = top.grasp_solution_generator();
         int rcl_len = file.get_N() / file.get_V();
         GRASP grasp(file.get_N(), file.get_V(), rcl_len, 100,30, firstSolution);
 //        grasp.graspAlgorithm();
-        grasp.graspAlgorithmTime(5);
+        grasp.graspAlgorithmTime(180);
         auto stop = high_resolution_clock::now();
 
         auto duration = duration_cast<seconds>(stop - start);

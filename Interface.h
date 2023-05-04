@@ -18,6 +18,7 @@
 #include <cmath>
 #include <cstdlib>
 #define MAX 20
+#define MAXS 130
 using namespace std;
 
 class File;
@@ -27,6 +28,7 @@ class SA;
 class GRASP;
 class TabuItem;
 static vector<Vertex> vertexVector;
+static vector<int> cantVisit;
 
 void add_to_vertex_vector(Vertex v);
 
@@ -143,6 +145,35 @@ public:
 
         }
     }
+    void read_file1() {
+        string firstPath = "C:\\HOSEIN\\jozve and tamrin\\8th Semester\\ADA\\HW 1\\Instances\\";
+        string format = ".txt";
+        string filePath = firstPath + fileName + format;
+        ifstream new_file;
+        // Open a file to perform a write operation using a file object.
+        cout << filePath << '\n';
+        new_file.open(filePath);
+
+        if (!new_file) {
+            cout << "Can't open file!" << '\n';
+            exit(1);
+        }
+        if (new_file.is_open()) {
+            string sa;
+            int lineCount = 3;
+            // Read data from the file object and put it into a string.
+            while (getline(new_file, sa)) {
+                if (lineCount == 2) {
+                    lineCount++;
+                    continue;
+                }
+                split_lines1(sa, lineCount);
+                lineCount++;
+            }
+            new_file.close();
+
+        }
+    }
     void split_lines(string line, int lineCount){
         float array[MAX];
         fill_n(array,MAX,-1);
@@ -172,6 +203,43 @@ public:
                 index ++;
             }
             create_vertex(array);
+
+        }
+    }
+
+    void split_lines1(string line, int lineCount){
+        float array[MAX];
+        fill_n(array,MAXS,-1);
+        if(lineCount == 1){
+
+            stringstream lineStream(line);
+            int index = 0;
+            while (lineStream.good() && index < MAX)
+            {
+
+                lineStream >> array[index];
+                index ++;
+            }
+            set_V(array[1]);
+            set_N(array[2]);
+
+        }
+        else{
+            stringstream lineStream(line);
+            int index = 0;
+            int row = lineCount - 3;
+            while (lineStream.good() && index < MAX)
+            {
+
+
+                lineStream >> array[index];
+                index ++;
+            }
+//            create_vertex(array);
+        for(int j = 0; j < MAXS; j++){
+            cout<<array[j]<<" ";
+        }
+        cout<<"\n";
 
         }
     }
@@ -207,6 +275,7 @@ protected:
     int V;
     float time;
     float profit;
+    vector<int> finalSolution;
     int nothing;
 
 public:
@@ -214,6 +283,10 @@ public:
         nothing = a;
         time = 0;
         profit = 0;
+    }
+
+    const vector<int> &getFinalSolution() const {
+        return finalSolution;
     }
 
     TOP(int n, int v){
@@ -250,53 +323,130 @@ public:
 
     void calculate_solution(vector<int>solution , int check){
         profit = 0;
+        float travel_Time = 0;
         int length = solution.size();
         int visitedNodes = 0;
-        for (int index = 0; index < length; index++){
-
-//            cout<<time<<" <--Time"<<'\n';
-//            cout<<profit<<"<--Profit"<<'\n';
+        int index = 0;
+        Vertex current = vertexVector[0];
+        Vertex head = vertexVector[0];
+        Vertex next = vertexVector[0];
+        while (index < length){
 
             if(solution[index] < 0){
                 setTime(0); // New path
+                index++;
                 continue;
             }
             else{
-                Vertex current = vertexVector[solution[index]]; //Current Vertex
-                int canBeVisitedResult = canBeVisited(current);
-                if(canBeVisitedResult == 0){
+
+                current = vertexVector[solution[index]];
+                int visitResult = canBeVisited(current);
+                if(visitResult == 0){
+                    head = current; // Current holder
+//                    cout<<"We visit "<<current.getI()<<'\n';
+//                    cout<<"Time Before visit "<<time<<'\n';
+                    addTime(current.getD());
+                    addProfit(current.getProfit());
+//                    cout<<"Time after visit "<<time<<'\n';
                     if(solution[index] != 0){
                         visitedNodes++;
                     }
-//                    cout<<"Can visit "<<current.getI()<<'\n';
-                    float duration = current.getD();
-                    addTime(duration);
-                    addProfit(current.getProfit());
-
                 }
-                else if(canBeVisitedResult == -1){
-//                    cout<<"Cant's visit node "<<current.getI()<<'\n';
+                else if(visitResult == -1){
+//                    cout<<"We can't visit "<<current.getI()<<'\n';
+//                    cout<<"Time in this node "<<time<<'\n';
+                    addTime(-1 * travel_Time);
                 }
-
                 else{
-                    // Wait for a time
-//                    cout<<"Can visit "<<current.getI()<<" But after waiting "<<canBeVisitedResult<<'\n';
-                    addTime(canBeVisitedResult);
-                    float duration = current.getD();
-                    addTime(duration);
+                    head = current;
+//                    cout<<"We can visit "<<current.getI()<<"But after "<<visitResult<<'\n';
+                    addTime(visitResult);
+//                    cout<<"Time Before visit "<<time<<'\n';
+                    addTime(current.getD());
                     addProfit(current.getProfit());
+//                    cout<<"Time after visit "<<time<<'\n';
                     if(solution[index] != 0){
                         visitedNodes++;
                     }
                 }
+
                 if(index + 1 != length){
-                    Vertex next = vertexVector[solution[index + 1]];
-                    float travelTime = distance_time(current, next);
-                    addTime(travelTime);
+                    next = vertexVector[solution[index + 1]];
+                    travel_Time = distance_time(head, next);
+//                    cout<<"Travel time from "<<head.getI()<<" to "<<next.getI()<<" "<<travel_Time<<'\n';
+                    addTime(travel_Time);
+                }
+            }
+            index++;
+        }
+
+        if(check == 1){
+            cout<<"We visit "<<visitedNodes<<" nodes with profit "<<profit<<'\n';
+        }
+
+    }
+
+    void calculate_solution_final(vector<int>solution , int check){
+        profit = 0;
+        float travel_Time = 0;
+        int length = solution.size();
+        int visitedNodes = 0;
+        int index = 0;
+        Vertex current = vertexVector[0];
+        Vertex head = vertexVector[0];
+        Vertex next = vertexVector[0];
+        while (index < length){
+
+            if(solution[index] < 0){
+                setTime(0); // New path
+                finalSolution.push_back(solution[index]);
+                index++;
+                continue;
+            }
+            else{
+
+                current = vertexVector[solution[index]];
+                int visitResult = canBeVisited(current);
+                if(visitResult == 0){
+                    head = current; // Current holder
+                    cout<<"We visit "<<current.getI()<<'\n';
+                    cout<<"Time Before visit "<<time<<'\n';
+                    addTime(current.getD());
+                    addProfit(current.getProfit());
+                    cout<<"Time after visit "<<time<<'\n';
+                    finalSolution.push_back(current.getI());
+                    if(solution[index] != 0){
+                        visitedNodes++;
+                    }
+                }
+                else if(visitResult == -1){
+                    cout<<"We can't visit "<<current.getI()<<'\n';
+                    cout<<"Time in this node "<<time<<'\n';
+                    addTime(-1 * travel_Time);
+                }
+                else{
+                    head = current;
+                    cout<<"We can visit "<<current.getI()<<"But after "<<visitResult<<'\n';
+                    addTime(visitResult);
+                    cout<<"Time Before visit "<<time<<'\n';
+                    addTime(current.getD());
+                    addProfit(current.getProfit());
+                    finalSolution.push_back(current.getI());
+                    cout<<"Time after visit "<<time<<'\n';
+                    if(solution[index] != 0){
+                        visitedNodes++;
+                    }
                 }
 
+                if(index + 1 != length){
+                    next = vertexVector[solution[index + 1]];
+                    travel_Time = distance_time(head, next);
+                    cout<<"Travel time from "<<head.getI()<<" to "<<next.getI()<<" "<<travel_Time<<'\n';
+                    addTime(travel_Time);
+                }
             }
-            }
+            index++;
+        }
 
         if(check == 1){
             cout<<"We visit "<<visitedNodes<<" nodes with profit "<<profit<<'\n';
@@ -308,7 +458,7 @@ public:
         if (time >= v.getOpeningTime() && time <= v.getClosingTime())
             return 0;
         else if (time < v.getOpeningTime())
-            return v.getOpeningTime() - time;
+            return ceill(v.getOpeningTime() - time);
         else{
             return -1;
         }
@@ -445,6 +595,19 @@ public:
         TOP top(0);
         top.calculate_solution(someSolution, check);
         return top.getProfit();
+    }
+
+    void calculateFinal(vector<int> someSolution , int check){
+        TOP top(0);
+        top.calculate_solution_final(someSolution, check);
+        cout<<top.getProfit()<<" Final S"<<'\n';
+        vector<int> finalS = top.getFinalSolution();
+        cout<<finalS.size()<<" size"<<'\n';
+        for (int i = 0; i < finalS.size(); i++){
+            cout<<finalS[i]<<",";
+        }
+        cout<<'\n';
+
     }
 
     vector<int> swapVector(vector<int> vector, int index1, int index2){
@@ -606,6 +769,8 @@ public:
         cout<<'\n';
 
         float finalProfit = calculate(solution, 1);
+        cout<<"*****************************************************"<<'\n';
+        calculateFinal(solution, 1);
         return finalProfit;
     }
 
@@ -760,6 +925,23 @@ public:
         TOP top(0);
         top.calculate_solution(someSolution, check);
         return top.getProfit();
+    }
+    void calculateFinal(vector<int> someSolution , int check){
+        TOP top(0);
+        top.calculate_solution_final(someSolution, check);
+        cout<<top.getProfit()<<" Final S"<<'\n';
+        vector<int> finalS = top.getFinalSolution();
+        cout<<finalS.size()<<" size"<<'\n';
+        for (int i = 0; i < finalS.size(); i++){
+            cout<<finalS[i]<<" ";
+        }
+        cout<<'\n';
+        cout<< "For check"<<'\n';
+        for (int i = 0; i < finalS.size(); i++){
+            cout<<finalS[i]<<",";
+        }
+        cout<<'\n';
+
     }
 
     void constructSolution(){
@@ -946,6 +1128,8 @@ public:
         }
         printVector("Final Solution" , BestSolution);
         calculate(BestSolution, 1);
+        cout<<"Final Solution Repaired!"<<'\n';
+        calculateFinal(BestSolution, 0);
     }
 
     void graspAlgorithmTime(int seconds){
@@ -971,6 +1155,8 @@ public:
         }
         printVector("Final Solution" , BestSolution);
         calculate(BestSolution, 1);
+        cout<<"Final Solution Repaired!"<<'\n';
+        calculateFinal(BestSolution, 0);
     }
 
 };
@@ -1047,6 +1233,23 @@ public:
         return top.getProfit();
     }
 
+    void calculateFinal(vector<int> someSolution , int check){
+        TOP top(0);
+        top.calculate_solution_final(someSolution, check);
+        cout<<top.getProfit()<<" Final S"<<'\n';
+        vector<int> finalS = top.getFinalSolution();
+        cout<<finalS.size()<<" size"<<'\n';
+        for (int i = 0; i < finalS.size(); i++){
+            cout<<finalS[i]<<" ";
+        }
+        cout<<'\n';
+        cout<< "For check"<<'\n';
+        for (int i = 0; i < finalS.size(); i++){
+            cout<<finalS[i]<<",";
+        }
+        cout<<'\n';
+
+    }
     struct sortByChangeStructure
     {
         inline bool operator() (const TabuItem& tb1, const TabuItem& tb2)
@@ -1232,6 +1435,8 @@ public:
         }
         printVector("Final Solution", FinalSolution);
         calculate(FinalSolution, 1);
+        cout<<"Solution Repaired!"<<'\n';
+        calculateFinal(FinalSolution,0);
     }
 
 
