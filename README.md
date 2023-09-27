@@ -1,7 +1,7 @@
-# TOP_1HW
+# TOPTW using single solution based metaheuristics
 
-command to run:
-
-g++ -O3 .\main.cpp -o main
-<br>
-main.exe
+## Usage:
+1. Clone this repo using `git clone https://github.com/hoseinmrh/TOPTW-Single-Solution-Based`
+2. Create a folder called `Instances` and put your instance there.
+3. To run each algortim go to its main file. For example `mainSA.CPP`.
+4. Put your file name and then run it using `g++ -O3 .\main.cpp -o main` command.
